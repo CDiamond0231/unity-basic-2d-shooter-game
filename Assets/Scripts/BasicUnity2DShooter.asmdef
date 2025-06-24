@@ -1,0 +1,16 @@
+{
+    "name": "BasicUnity2DShooter",
+    "rootNamespace": "BasicUnity2DShooter",
+    "references": [
+        "GUID:15010b92445908542a8a0fd44de4091c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
