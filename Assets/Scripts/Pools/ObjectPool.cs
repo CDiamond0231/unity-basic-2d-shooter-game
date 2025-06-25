@@ -57,14 +57,17 @@ namespace BasicUnity2DShooter
             if (m_freeObjects.Count == 0)
             {
                 // Add a new one
-                m_allPooledObjects.Add( Instantiate(m_prefab, m_parentTransform) );
-                m_activeObjects.AddLast( m_allPooledObjects[^1] );
-                return m_allPooledObjects[^1];
+                T spawnedObj = Instantiate(m_prefab, m_parentTransform);
+                m_allPooledObjects.Add(spawnedObj);
+                m_activeObjects.AddLast(spawnedObj);
+                OnElementSpawned(spawnedObj);
+                return spawnedObj;
             }
 
             // Get free obj. Fetching from back to avoid list element swapping overhead
             T obj = m_freeObjects[^1];
             m_freeObjects.RemoveAt(m_freeObjects.Count - 1);
+            m_activeObjects.AddLast(obj);
 
             // The onus is now on the caller to let the pool know when the obj is free again.
             return obj;
@@ -78,15 +81,14 @@ namespace BasicUnity2DShooter
                 return;
             }
 
-            LinkedListNode<T> linkedListNode = m_activeObjects.Find(_obj);
-            if (linkedListNode == null)
+            if (m_activeObjects.Remove(_obj))
+            {
+                m_freeObjects.Add(_obj);
+            }
+            else
             {
                 Debug.LogError("Could not locate Obj to free up in pool. Maybe you tried to free it twice?");
-                return;
             }
-
-            m_activeObjects.Remove(linkedListNode);
-            m_freeObjects.Add(_obj);
         }
 
         /// <summary> Pre-allocates the pool of objects. Instantiating up to the given pool size. </summary>
@@ -100,9 +102,16 @@ namespace BasicUnity2DShooter
 
             for (int i = 0; i < _poolSize; ++i)
             {
-                m_allPooledObjects.Add(Instantiate(m_prefab, m_parentTransform));
-                m_freeObjects.Add(m_allPooledObjects[^1]);
+                T spawnedObject = Instantiate(m_prefab, m_parentTransform);
+                OnElementSpawned(spawnedObject);
+
+                m_allPooledObjects.Add(spawnedObject);
+                m_freeObjects.Add(spawnedObject);
             }
+        }
+
+        protected virtual void OnElementSpawned(T _obj)
+        {
         }
     }
 }

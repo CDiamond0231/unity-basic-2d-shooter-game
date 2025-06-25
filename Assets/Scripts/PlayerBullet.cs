@@ -1,30 +1,60 @@
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//             Player Bullet
+//             Author: Christopher A
+//             Date Created: 25th June, 2025
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  Description:
+//
+//      Manages the bullets shot by the player
+//
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Player Bullet
-/// </summary>
+/// <summary> Player Bullet </summary>
 public class PlayerBullet : MonoBehaviour
 {
-	[Header("Parameter")]
-	public float m_move_speed = 5;
-	public float m_life_time = 2;
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //          Inspector Fields
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [Header("Parameter")]
+	public float m_moveSpeed = 5;
+	public float m_remainingLifeTime = 2;
 
-	//
-	void Update()
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //          Non-Inspector Fields
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    private System.Action<PlayerBullet>? _onRemovedCallback = null;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //          Unity Methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    protected void Update()
 	{
-		transform.position += new Vector3(0, 1, 0) * m_move_speed * Time.deltaTime;
+		transform.position += Vector3.up * m_moveSpeed * Time.deltaTime;
 
-		m_life_time -= Time.deltaTime;
-		if (m_life_time <= 0)
+		m_remainingLifeTime -= Time.deltaTime;
+		if (m_remainingLifeTime < 0.00001)
 		{
-			DeleteObject();
+			RemoveObject();
 		}
 	}
 
-	public void DeleteObject()
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //          Methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	public void Initialise(System.Action<PlayerBullet> _onRemoved)
 	{
-		GameObject.Destroy(gameObject);
-	}
+        m_remainingLifeTime = 2.0f;
+        gameObject.SetActive(true);
+        _onRemovedCallback = _onRemoved;
+    }
+
+    public void RemoveObject()
+	{
+        gameObject.SetActive(false);
+        _onRemovedCallback?.Invoke(this);
+    }
 }

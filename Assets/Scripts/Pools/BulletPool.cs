@@ -1,11 +1,11 @@
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//             Enemy Object Pool
+//             Bullet Object Pool
 //             Author: Christopher A
-//             Date Created: 24th June, 2025
+//             Date Created: 25th June, 2025
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  Description:
 //
-//      Enemy Object Pool: Inherits from BaseObjectPool
+//      BUllet Object Pool: Inherits from BaseObjectPool
 //
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 using System.Collections;
@@ -14,9 +14,9 @@ using UnityEngine;
 
 namespace BasicUnity2DShooter
 {
-    public class EnemyPool : ObjectPool<Enemy>
+    public class BulletPool : ObjectPool<PlayerBullet>
     {
-        protected override void OnElementSpawned(Enemy _obj)
+        protected override void OnElementSpawned(PlayerBullet _obj)
         {
             _obj.gameObject.SetActive(false);
         }
