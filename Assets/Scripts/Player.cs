@@ -35,7 +35,10 @@ namespace BasicUnity2DShooter
 
 		[Header("Parameter")]
 		[SerializeField] private float m_moveSpeed = 5f;
-		[SerializeField] private float m_smoothing = 0.8f;
+		[SerializeField] private float m_moveSmoothing = 0.8f;
+
+        [SerializeField] private float m_tiltAngle = 15f;
+        [SerializeField] private float m_tiltSmoothing = 0.1f;
 
         [Header("Audio")]
         [SerializeField] private AudioClip[] m_shootSFX = System.Array.Empty<AudioClip>();
@@ -89,8 +92,14 @@ namespace BasicUnity2DShooter
             targetDirection.Normalize();
             m_targetVelocity = targetDirection * m_moveSpeed;
 
-            m_currentVelocity = Vector3.Lerp(m_currentVelocity, m_targetVelocity, m_smoothing);
+            m_currentVelocity = Vector3.Lerp(m_currentVelocity, m_targetVelocity, m_moveSmoothing);
             transform.position += m_currentVelocity * Time.deltaTime;
+
+
+            // Tilting
+            Quaternion targetRotation = Quaternion.Euler(0, 0, -moveHorizontal * m_tiltAngle);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, m_tiltSmoothing);
+
 
             // Shooting
             if (Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.Space))
