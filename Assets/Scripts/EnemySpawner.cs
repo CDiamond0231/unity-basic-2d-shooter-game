@@ -46,7 +46,7 @@ namespace BasicUnity2DShooter
         [SerializeField] private Vector3[] m_movementPoints = System.Array.Empty<Vector3>();
 
         [Header("Parameter")]
-        private float m_spawnInterval = 0.5f;
+        [SerializeField] private float m_spawnInterval = 0.5f;
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Non-Inspector Fields
@@ -59,8 +59,8 @@ namespace BasicUnity2DShooter
         private int m_numEnemiesFinished = 0;
         private System.Action? m_whenAllEnemiesStoppedCallback = null;
 
-        private List<Enemy> m_ownedEnemyObjects = new List<Enemy>();
-        private List<Vector3> m_drawPathPoints = new List<Vector3>();
+        private readonly List<Enemy> m_ownedEnemyObjects = new List<Enemy>();
+        private readonly List<Vector3> m_drawPathPoints = new List<Vector3>();
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Properties
@@ -90,13 +90,10 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         protected void Update()
         {
-            if (m_localStateMachine != null)
-            {
-                m_localStateMachine.Update();
-            }
+            m_localStateMachine?.Update();
         }
 
-        private void OnDrawGizmos()
+        protected void OnDrawGizmos()
         {
             Gizmos.color = m_gizmoPathColour;
             Gizmos.DrawWireSphere(transform.position, 1.0f);
@@ -148,15 +145,18 @@ namespace BasicUnity2DShooter
             CurrentState = SpawnerState.Inactive;
         }
 
+        /// <summary> Builds the state machine </summary>
         private void BuildStateMachine(SpawnerState _initialState)
         {
-            Dictionary<SpawnerState, SimpleState> states = new Dictionary<SpawnerState, SimpleState>();
-            states[SpawnerState.Inactive] = new SimpleState(null, null, null);
-            states[SpawnerState.ShowingPath] = new SimpleState(ShowingPathState_OnEnter, ShowingPathState_Update, ShowingPathState_OnExit);
-            states[SpawnerState.SpawningEnemy] = new SimpleState(SpawningEnemyState_OnEnter, SpawningEnemyState_Update, SpawningEnemyState_OnExit);
-            states[SpawnerState.SpawnCooldown] = new SimpleState(SpawnCooldownState_OnEnter, SpawnCooldownState_Update, SpawnCooldownState_OnExit);
-            states[SpawnerState.AwaitingPathingToComplete] = new SimpleState(AwaitingPathingState_OnEnter, AwaitingPathingState_Update, AwaitingPathingState_OnExit);
-            states[SpawnerState.RemovingPath] = new SimpleState(RemovingPathState_OnEnter, RemovingPathState_Update, RemovingPathState_OnExit);
+            Dictionary<SpawnerState, SimpleState> states = new Dictionary<SpawnerState, SimpleState>
+            {
+                [SpawnerState.Inactive]                  = new SimpleState(null, null, null),
+                [SpawnerState.ShowingPath]               = new SimpleState(ShowingPathState_OnEnter, ShowingPathState_Update, ShowingPathState_OnExit),
+                [SpawnerState.SpawningEnemy]             = new SimpleState(SpawningEnemyState_OnEnter, SpawningEnemyState_Update, SpawningEnemyState_OnExit),
+                [SpawnerState.SpawnCooldown]             = new SimpleState(SpawnCooldownState_OnEnter, SpawnCooldownState_Update, SpawnCooldownState_OnExit),
+                [SpawnerState.AwaitingPathingToComplete] = new SimpleState(AwaitingPathingState_OnEnter, AwaitingPathingState_Update, AwaitingPathingState_OnExit),
+                [SpawnerState.RemovingPath]              = new SimpleState(RemovingPathState_OnEnter, RemovingPathState_Update, RemovingPathState_OnExit)
+            };
 
             m_localStateMachine = new EnumDirectedStateMachine<SpawnerState>(states);
             m_localStateMachine.ChangeState(_initialState);
@@ -241,9 +241,10 @@ namespace BasicUnity2DShooter
             m_ownedEnemyObjects.Add(spawnedEnemy);
 
             MeshRenderer meshrenderer = spawnedEnemy.GetComponentInChildren<MeshRenderer>();
-            Material mat = new Material(meshrenderer.material);
-            mat.color = m_gizmoPathColour;
-            meshrenderer.material = mat;
+            meshrenderer.material = new Material(meshrenderer.material)
+            {
+                color = m_gizmoPathColour
+            };
 
             spawnedEnemy.Initialise(m_movementPoints, m_timeToTraversePathDuration, (killedByPlayer) =>
             {

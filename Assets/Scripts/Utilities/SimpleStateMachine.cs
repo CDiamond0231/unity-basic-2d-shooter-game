@@ -8,6 +8,7 @@
 //      Simple State Machine with Entry, Update, and Exit functionality
 //
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#nullable enable
 
 namespace BasicUnity2DShooter.Utilities
 {
@@ -23,11 +24,11 @@ namespace BasicUnity2DShooter.Utilities
 
     public class SimpleState
     {
-        public readonly SimpleEnterState Enter;
-        public readonly SimpleUpdateState Update;
-        public readonly SimpleExitState Exit;
+        public readonly SimpleEnterState? Enter;
+        public readonly SimpleUpdateState? Update;
+        public readonly SimpleExitState? Exit;
 
-        public SimpleState(SimpleEnterState _enter = null, SimpleUpdateState _update = null, SimpleExitState _exit = null)
+        public SimpleState(SimpleEnterState? _enter = null, SimpleUpdateState? _update = null, SimpleExitState? _exit = null)
         {
             this.Enter = _enter;
             this.Update = _update;
@@ -38,8 +39,8 @@ namespace BasicUnity2DShooter.Utilities
 
     public class SimpleStateMachine
     {
-        public SimpleState CurrentState { get; private set; }
-        public SimpleState PreviousState { get; private set; }
+        public SimpleState? CurrentState { get; private set; }
+        public SimpleState? PreviousState { get; private set; }
         public float TimeSpentInCurrentState { get; private set; }
 
         ///<summary> Constructor with an initial state set on construction </summary> 
@@ -52,6 +53,8 @@ namespace BasicUnity2DShooter.Utilities
         {
         }
 
+        /// <summary> Calling Update on the StateMachine is essentially for calling the `update` function for the curren state.
+        /// It is your responsibility to call Update from your host class. </summary>
         public void Update()
         {
             TimeSpentInCurrentState += UnityEngine.Time.deltaTime;
@@ -60,11 +63,8 @@ namespace BasicUnity2DShooter.Utilities
                 CurrentState.Update(this);
         }
 
-        protected bool CanTransitionToState(SimpleState _state, bool _canTransitionToSelf = true)
-        {
-            return CurrentState != _state || _canTransitionToSelf;
-        }
-
+        /// <summary> Simply changes to the next desired state.
+        /// If next state is self, must set `can transition` value to true. This will alow it to go through exit & enter states again. </summary>
         public void ChangeState(SimpleState _state, bool _canTransitionToSelf = true)
         {
             if (CanTransitionToState(_state, _canTransitionToSelf))
@@ -79,6 +79,11 @@ namespace BasicUnity2DShooter.Utilities
                 if (CurrentState != null && CurrentState.Enter != null)
                     CurrentState.Enter(this);
             }
+        }
+
+        protected bool CanTransitionToState(SimpleState _state, bool _canTransitionToSelf = true)
+        {
+            return CurrentState != _state || _canTransitionToSelf;
         }
     }
 }

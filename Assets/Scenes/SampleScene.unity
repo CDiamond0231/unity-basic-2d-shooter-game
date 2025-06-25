@@ -509,7 +509,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_prefab: {fileID: 7941598295554223428, guid: 489ca4fe60917514a823a5455dab0a38, type: 3}
   m_parentTransform: {fileID: 393269775}
-  m_preallocationCount: 15
+  m_preallocationCount: 30
 --- !u!1 &431413296
 GameObject:
   m_ObjectHideFlags: 0
@@ -822,6 +822,10 @@ PrefabInstance:
       propertyPath: m_bulletPool
       value: 
       objectReference: {fileID: 393269776}
+    - target: {fileID: 8345280602849411046, guid: 6ac43da3da70c1a4e97cf724e73a4dd7, type: 3}
+      propertyPath: m_mainCamera
+      value: 
+      objectReference: {fileID: 963194227}
     - target: {fileID: 8345280602849411046, guid: 6ac43da3da70c1a4e97cf724e73a4dd7, type: 3}
       propertyPath: m_deathSFX.Array.size
       value: 3

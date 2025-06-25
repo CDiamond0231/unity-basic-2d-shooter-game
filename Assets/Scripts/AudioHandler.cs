@@ -28,11 +28,18 @@ namespace BasicUnity2DShooter
         [SerializeField] private AudioSource[] m_audioSources = System.Array.Empty<AudioSource>();
 
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Unity Methods
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         protected void Awake()
         {
             Instance = this;
         }
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Methods
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// <summary> Plays a One-Shot SFX on demand. </summary>
         public void PlayOneShot(AudioClip _clip, float _volume = 1.0f)
         {
             foreach (AudioSource audSource in m_audioSources)

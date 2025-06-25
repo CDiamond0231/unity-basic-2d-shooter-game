@@ -20,7 +20,7 @@ using UnityEngine.UI;
 
 namespace BasicUnity2DShooter
 {
-    public partial class SceneTransitionEffect : MonoBehaviour
+    public class SceneTransitionEffect : MonoBehaviour
     {
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Definitions
@@ -86,10 +86,7 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         protected void Update()
         {
-            if (m_localStateMachine != null)
-            {
-                m_localStateMachine.Update();
-            }
+            m_localStateMachine?.Update();
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,10 +97,9 @@ namespace BasicUnity2DShooter
         /// <param name="_fadeOutTime"> The length of time (seconds) it will take for the screen to fully fade out. </param>
         /// <param name="_hangDuration"> The length of time (seconds) it will remain in the faded out state before transitioning out (fade in). </param>
         /// <param name="_fadeInTime"> The length of time (seconds) it will take to fade back in. If null, will reuse the FadeOutTime. </param>
-        /// <param name="_autoFadeOut"> Whether to fade out after the specified hang time. If false, fade out must manually be called.</param>
         /// <param name="_onFadeOutCompleted"> Callback when the Fadeout has fully occurred. Use this callback to set up your Scene. </param>
         /// <param name="_onFadeInCompleted"> Callback when the Fade in has completed and the transition effect has ended. Use this to enable player input for your scene. </param>
-        public void BeginTransition(Texture2D _transitionImg, float? _fadeOutTime, float _hangDuration = 0.25f, float? _fadeInTime = null, bool _autoFadeOut = true, System.Action? _onFadeOutCompleted = null, System.Action? _onFadeInCompleted = null)
+        public void BeginTransition(Texture2D _transitionImg, float? _fadeOutTime, float _hangDuration = 0.25f, float? _fadeInTime = null, System.Action? _onFadeOutCompleted = null, System.Action? _onFadeInCompleted = null)
         {
             m_fadeOutTime = _fadeOutTime ?? m_defaultFadeDuration;
             m_hangDuration = _hangDuration;
@@ -114,8 +110,7 @@ namespace BasicUnity2DShooter
 
             if (CurrentTransitionState == TransitionState.Idle || CurrentTransitionState == TransitionState.FadeIn)
             {
-                if (images == null)
-                    images =  GetComponentsInChildren<Image>(true);
+                images ??= GetComponentsInChildren<Image>(true);
 
                 foreach (var image in images)
                 {
@@ -135,23 +130,24 @@ namespace BasicUnity2DShooter
         /// <param name="_fadeOutTime"> The length of time (seconds) it will take for the screen to fully fade out. </param>
         /// <param name="_hangDuration"> The length of time (seconds) it will remain in the faded out state before transitioning out (fade in). </param>
         /// <param name="_fadeInTime"> The length of time (seconds) it will take to fade back in. If null, will reuse the FadeOutTime. </param>
-        /// <param name="_autoFadeOut"> Whether to fade out after the specified hang time. If false, fade out must manually be called.</param>
         /// <param name="_onFadeOutCompleted"> Callback when the Fadeout has fully occurred. Use this callback to set up your Scene. </param>
         /// <param name="_onFadeInCompleted"> Callback when the Fade in has completed and the transition effect has ended. Use this to enable player input for your scene. </param>
-        public void ShowRandomTransition(float? _fadeOutTime, float _hangDuration = 0.25f, float? _fadeInTime = null, bool _autoFadeOut = true, System.Action? _onFadeOutCompleted = null, System.Action? _onFadeInCompleted = null)
+        public void ShowRandomTransition(float? _fadeOutTime, float _hangDuration = 0.25f, float? _fadeInTime = null, System.Action? _onFadeOutCompleted = null, System.Action? _onFadeInCompleted = null)
         {
             int r = UnityEngine.Random.Range(0, m_transitionEffectImages.Length);
             Texture2D transitionEffect = m_transitionEffectImages[r];
-            BeginTransition(transitionEffect, _fadeOutTime, _hangDuration, _fadeInTime, _autoFadeOut, _onFadeOutCompleted, _onFadeInCompleted);
+            BeginTransition(transitionEffect, _fadeOutTime, _hangDuration, _fadeInTime, _onFadeOutCompleted, _onFadeInCompleted);
         }
 
         private void BuildStateMachine(TransitionState _initialState)
         {
-            Dictionary<TransitionState, SimpleState> states = new Dictionary<TransitionState, SimpleState>();
-            states[TransitionState.Idle] = new SimpleState(null, null, null);
-            states[TransitionState.FadeOut] = new SimpleState(FadeOutState_OnEnter, FadeOutState_Update, FadeOutState_OnExit);
-            states[TransitionState.Hang] = new SimpleState(HangState_OnEnter, HangState_Update, HangState_OnExit);
-            states[TransitionState.FadeIn] = new SimpleState(FadeInState_OnEnter, FadeInState_Update, FadeInState_OnExit);
+            Dictionary<TransitionState, SimpleState> states = new Dictionary<TransitionState, SimpleState>
+            {
+                [TransitionState.Idle]    = new SimpleState(null, null, null),
+                [TransitionState.FadeOut] = new SimpleState(FadeOutState_OnEnter, FadeOutState_Update, FadeOutState_OnExit),
+                [TransitionState.Hang]    = new SimpleState(HangState_OnEnter, HangState_Update, HangState_OnExit),
+                [TransitionState.FadeIn]  = new SimpleState(FadeInState_OnEnter, FadeInState_Update, FadeInState_OnExit)
+            };
 
             m_localStateMachine = new EnumDirectedStateMachine<TransitionState>(states);
             m_localStateMachine.ChangeState(_initialState);
@@ -229,14 +225,18 @@ namespace BasicUnity2DShooter
                 float progress = _stateMachine.TimeSpentInCurrentState / m_fadeInTime;
                 float f = Mathf.Lerp(MaxCutoffValue, MinCutoffValue, progress);
                 foreach (var image in images!)
+                {
                     image.material.SetFloat(CutoffID, f);
+                }
             }
         }
 
         private void FadeInState_OnExit(SimpleStateMachine _stateMachine)
         {
             foreach (var image in images!)
+            {
                 image.material.SetFloat(CutoffID, MinCutoffValue);
+            }
 
             OnFadeInCompleted?.Invoke();
         }

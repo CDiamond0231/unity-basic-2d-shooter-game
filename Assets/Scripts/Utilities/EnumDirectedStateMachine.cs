@@ -18,29 +18,39 @@ namespace BasicUnity2DShooter.Utilities
 {
     public class EnumDirectedStateMachine<E> : SimpleStateMachine where E : System.Enum
     {
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Non-Inspector Fields
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        private readonly System.Collections.Generic.Dictionary<E, SimpleState> _enumValToState = null!;
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Properties
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         public E CurrentEnumState { get; private set; }
 
-        private System.Collections.Generic.Dictionary<E, SimpleState> enumValToState = null;
-
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Methods
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         public EnumDirectedStateMachine(E _initialState, System.Collections.Generic.Dictionary<E, SimpleState> _enumValToState) : base()
         {
-            enumValToState = _enumValToState;
+            this._enumValToState = _enumValToState;
             CurrentEnumState = _initialState;
             ChangeState(_initialState, true);
         }
 
         public EnumDirectedStateMachine(System.Collections.Generic.Dictionary<E, SimpleState> _enumValToState) : base()
         {
-            enumValToState = _enumValToState;
+            this._enumValToState = _enumValToState;
         }
 
+        /// <summary> Simply changes to the next desired state.
+        /// If next state is self, must set `can transition` value to true. This will alow it to go through exit & enter states again. </summary>
         public void ChangeState(E _newState, bool _canTransitionToSelf = false)
         {
             if (CurrentEnumState.Equals(_newState) && _canTransitionToSelf == false)
                 return;
 
-            SimpleState nextState;
-            if (enumValToState.TryGetValue(_newState, out nextState) == false)
+            if (_enumValToState.TryGetValue(_newState, out SimpleState nextState) == false)
             {
                 UnityEngine.Debug.LogError($"Tried to switch to state [{_newState}]. But this state is undefined. Remaining in state [{CurrentEnumState}].");
                 return;

@@ -13,9 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Title Screen Loop
-/// </summary>
+/// <summary> Title Screen Loop </summary>
 namespace BasicUnity2DShooter
 {
 	public class TitleLoop : MonoBehaviour
@@ -23,8 +21,8 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        [SerializeField] private StageLoop m_stageLoop;
-		[SerializeField] private SceneTransitionEffect m_sceneTransitionEffect;
+        [SerializeField] private StageLoop m_stageLoop = null!;
+		[SerializeField] private SceneTransitionEffect m_sceneTransitionEffect = null!;
 
 		[Header("Layout")]
 		[SerializeField] private GameObject m_titleUIHierarchy = null!;
@@ -35,7 +33,7 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Non-Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        private List<int> m_enemySpawnerSelections = new List<int>();
+        private readonly List<int> m_enemySpawnerSelections = new List<int>();
         private int m_currentSpawnerIndex = -1;
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +119,7 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         public void StartTitleLoop()
         {
-            // Switching on Title Screen Controller, which then switches off on via OnEnable
+            // Switching on Title Screen Controller, which then switches on UI via OnEnable
             this.enabled = true;
         }
     }

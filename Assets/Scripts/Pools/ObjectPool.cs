@@ -8,6 +8,7 @@
 //      Object Pool base class.
 //
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,8 +21,8 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        [SerializeField] protected T m_prefab;
-        [SerializeField] protected Transform m_parentTransform;
+        [SerializeField] protected T m_prefab = null!;
+        [SerializeField] protected Transform m_parentTransform = null!;
         
         [SerializeField, Tooltip("Number of Objects to preallocate by default")]
         protected int m_preallocationCount = 50;
@@ -29,9 +30,9 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Non-Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        List<T> m_allPooledObjects = new List<T>();
-        List<T> m_freeObjects = new List<T>();
-        LinkedList<T> m_activeObjects = new LinkedList<T>();
+        private readonly List<T> m_allPooledObjects = new List<T>();
+        private readonly List<T> m_freeObjects = new List<T>();
+        private readonly LinkedList<T> m_activeObjects = new LinkedList<T>();
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Properties

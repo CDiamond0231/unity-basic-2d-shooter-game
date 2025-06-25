@@ -20,12 +20,13 @@ public class PlayerBullet : MonoBehaviour
     //          Inspector Fields
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     [Header("Parameter")]
-	public float m_moveSpeed = 5;
-	public float m_remainingLifeTime = 2;
+	[SerializeField] private float m_moveSpeed = 5f;
+	[SerializeField] private float m_lifeTimeSeconds = 2f;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //          Non-Inspector Fields
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    private float m_remainingLifeTime = 2f;
     private System.Action<PlayerBullet>? _onRemovedCallback = null;
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,7 +34,7 @@ public class PlayerBullet : MonoBehaviour
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     protected void Update()
 	{
-		transform.position += Vector3.up * m_moveSpeed * Time.deltaTime;
+		transform.position += m_moveSpeed * Time.deltaTime * Vector3.up;
 
 		m_remainingLifeTime -= Time.deltaTime;
 		if (m_remainingLifeTime < 0.00001)
@@ -45,13 +46,15 @@ public class PlayerBullet : MonoBehaviour
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //          Methods
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /// <summary> Invoked when the bullet is fired by the player. </summary>
 	public void Initialise(System.Action<PlayerBullet> _onRemoved)
 	{
-        m_remainingLifeTime = 2.0f;
+        m_remainingLifeTime = m_lifeTimeSeconds;
         gameObject.SetActive(true);
         _onRemovedCallback = _onRemoved;
     }
 
+    /// <summary> Invoked either when timeout occurs or an enemy is struck. </summary>
     public void RemoveObject()
 	{
         gameObject.SetActive(false);

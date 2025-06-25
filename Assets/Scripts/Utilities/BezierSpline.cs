@@ -1,3 +1,21 @@
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//             Cubic Bezier Curve
+//             Author: Christopher A
+//             Date: June 19, 2025
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  Description:
+//
+//		Please think of an algorithm that given 4 arbitrary points produces a
+//      smooth curve that connects all of them. Then write a function that takes
+//      5 parameters (4 points and a 'time' parameter between 0 and 1) and returns
+//      the point on the curve at an arbitrary 'time'.
+// 
+//      Now write a function that given an arbitrary number of points smoothly
+//      interpolates between them at a given input 'time' parameter between
+//      0 and 1.
+//
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

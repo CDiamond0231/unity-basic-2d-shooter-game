@@ -23,7 +23,7 @@ namespace BasicUnity2DShooter
         //          Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         [Header("Parameter")]
-		[SerializeField] private float m_rotation_speed = 200;
+		[SerializeField] private float m_rotationSpeed = 200;
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		//          Non-Inspector Fields
@@ -49,9 +49,11 @@ namespace BasicUnity2DShooter
 			}
 
 			float t = m_secondsSinceSpawn / m_totalPathTraversalDuration;
-			transform.position = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t);
-			transform.rotation *= Quaternion.AngleAxis(m_rotation_speed * Time.deltaTime, new Vector3(1, 1, 0));
-		}
+			transform.SetPositionAndRotation(
+				position: BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t),
+                rotation: transform.rotation * Quaternion.AngleAxis(m_rotationSpeed * Time.deltaTime, new Vector3(1, 1, 0))
+			);
+        }
 
 		private void OnCollisionEnter(Collision collision)
 		{
@@ -65,6 +67,10 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Methods
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		/// <summary> Call this when spawning an enemy from the pool. </summary>
+		/// <param name="_movementPoints"> Where to go </param>
+		/// <param name="_totalPathTraversalDuration"> How long to take </param>
+		/// <param name="_onEnemyDestroyedCallback"> Who can I call when I either die or finish moving? </param>
 		public void Initialise(Vector3[] _movementPoints, float _totalPathTraversalDuration, System.Action<bool>? _onEnemyDestroyedCallback)
 		{
 			m_secondsSinceSpawn = 0.0f;
@@ -76,11 +82,13 @@ namespace BasicUnity2DShooter
             gameObject.SetActive(true);
         }
 
+		/// <summary> Turns off the enemy. </summary>
         public void DisableEnemy()
         {
             gameObject.SetActive(false);
         }
 
+		/// <summary> Invoked when shot by player. </summary>
         private void OnDestroyedByPlayer(PlayerBullet _playerBullet)
 		{
 			if (StageLoop.Instance != null)
@@ -95,7 +103,6 @@ namespace BasicUnity2DShooter
 
 			gameObject.SetActive(false);
             m_onEnemyDestroyedCallback?.Invoke(true); // true => Killed by player
-
         }
 	}
 }
