@@ -66,6 +66,7 @@ namespace BasicUnity2DShooter
         [SerializeField] private Player m_player = null!;
 
         [Header("Layout")]
+        [SerializeField] private GameObject m_stageUIHierarchy = null!;
         [SerializeField] private Text m_enemiesRemainingCountText = null!;
         [SerializeField] private Text m_killsCountText = null!;
         [SerializeField] private Text m_killsNeededCountText = null!;
@@ -114,6 +115,16 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Unity Methods
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        protected void OnEnable()
+        {
+            m_stageUIHierarchy.SetActive(true);
+        }
+
+        protected void OnDisable()
+        {
+            m_stageUIHierarchy.SetActive(false);
+        }
+
         protected void Update()
         {
             if (m_localStateMachine != null)
@@ -127,7 +138,9 @@ namespace BasicUnity2DShooter
                 CurrentState = StageState.Paused;
                 m_sceneTransitionEffect.ShowRandomTransition(0.5f, _onFadeOutCompleted: () =>
                 {
-                    //exit stage
+                    // Switching off Game Screen Controller, which then switches off UI via OnDiable
+                    this.enabled = false;
+
                     Instance = null;
                     m_titleLoopRef.StartTitleLoop();
                 });
@@ -139,7 +152,9 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         public void StartStageLoop()
 		{
+            // Switching on Game Screen Controller, which then switches on UI via OnEnable
             Instance = this;
+            this.enabled = true;
 
             m_numKillsThisWave = 0;
             m_currentWaveIndex = -1;
@@ -154,7 +169,7 @@ namespace BasicUnity2DShooter
 
         public void OnEnemyRemoved()
         {
-            --m_numEnemiesRemaining;
+            m_numEnemiesRemaining = Mathf.Max(m_numEnemiesRemaining - 1, 0);
             m_enemiesRemainingCountText.text = $"Enemies Remaining: {m_numEnemiesRemaining:00}";
         }
 

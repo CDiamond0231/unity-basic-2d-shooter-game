@@ -635,7 +635,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &642253943
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2040,7 +2040,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106369384}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b85b9a263787b54d90d2ce68d506f61, type: 3}
   m_Name: 
@@ -2048,6 +2048,7 @@ MonoBehaviour:
   m_titleLoopRef: {fileID: 1106369388}
   m_sceneTransitionEffect: {fileID: 145326262}
   m_player: {fileID: 841398916}
+  m_stageUIHierarchy: {fileID: 642253942}
   m_enemiesRemainingCountText: {fileID: 226889684}
   m_killsCountText: {fileID: 999465702}
   m_killsNeededCountText: {fileID: 960460078}
@@ -2128,9 +2129,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d9835b8498cc74facb29c8db339a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_stage_loop: {fileID: 1106369387}
+  m_stageLoop: {fileID: 1106369387}
   m_sceneTransitionEffect: {fileID: 145326262}
-  m_ui_title: {fileID: 1109414499}
+  m_titleUIHierarchy: {fileID: 1109414498}
+  m_enemySpawners:
+  - {fileID: 1308506617}
+  - {fileID: 374786212}
+  - {fileID: 1702557320}
+  - {fileID: 1008185540}
 --- !u!1 &1109414498
 GameObject:
   m_ObjectHideFlags: 0
@@ -2371,6 +2377,7 @@ GameObject:
   - component: {fileID: 1422702965}
   - component: {fileID: 1422702967}
   - component: {fileID: 1422702966}
+  - component: {fileID: 1422702968}
   m_Layer: 0
   m_Name: PressStart
   m_TagString: Untagged
@@ -2439,6 +2446,27 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1422702964}
   m_CullTransparentMesh: 1
+--- !u!95 &1422702968
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422702964}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 56ce84b5188391f4b9dca420ddb4b95a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1643274317
 GameObject:
   m_ObjectHideFlags: 0

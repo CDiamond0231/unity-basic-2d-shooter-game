@@ -65,6 +65,8 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Properties
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        public bool IsSpawningEnemies => CurrentState != SpawnerState.Inactive;
+
         private SpawnerState CurrentState
         {
             get
@@ -81,6 +83,7 @@ namespace BasicUnity2DShooter
                     m_localStateMachine.ChangeState(value);
             }
         }
+
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Unity Methods
@@ -113,7 +116,7 @@ namespace BasicUnity2DShooter
         /// <summary> Starts spawning enemies along the path </summary>
         /// <param name="_numEnemies"> Total number of enemies to chuck onto the path. </param>
         /// <param name="_whenAllEnemiesStopped"> Callback when all enemies have either left the path or have been destroyed. </param>
-        public void StartSpawningEnemies(int _numEnemies, float _travelPathDuration, System.Action _whenAllEnemiesStopped)
+        public void StartSpawningEnemies(int _numEnemies, float _travelPathDuration, System.Action? _whenAllEnemiesStopped)
         {
             m_numEnemiesSpawned = 0;
             m_numEnemiesFinished = 0;
