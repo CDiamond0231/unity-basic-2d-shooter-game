@@ -90,7 +90,8 @@ namespace BasicUnity2DShooter
 
             Vector3 targetDirection = new Vector3(moveHorizontal, moveVertical, 0);
             targetDirection.Normalize();
-            m_targetVelocity = targetDirection * m_moveSpeed;
+            float moveSpeed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? m_moveSpeed * 2f : m_moveSpeed;
+            m_targetVelocity = targetDirection * moveSpeed;
 
             m_currentVelocity = Vector3.Lerp(m_currentVelocity, m_targetVelocity, m_moveSmoothing);
             transform.position += m_currentVelocity * Time.deltaTime;

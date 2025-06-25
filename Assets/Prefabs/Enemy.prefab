@@ -130,7 +130,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96a38b918eb55b54792e470dbc04b624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_rotation_speed: 200
+  m_rotationSpeed: 200
+  m_deathSFX: {fileID: 8300000, guid: 43025ed1a06336440a46f104c3937333, type: 3}
 --- !u!54 &1482555287743958093
 Rigidbody:
   m_ObjectHideFlags: 0

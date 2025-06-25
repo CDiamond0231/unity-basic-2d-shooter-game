@@ -50,6 +50,14 @@ public class PlayerBullet : MonoBehaviour
 	public void Initialise(System.Action<PlayerBullet> _onRemoved)
 	{
         m_remainingLifeTime = m_lifeTimeSeconds;
+
+        TrailRenderer trail = GetComponent<TrailRenderer>();
+        if (trail != null)
+        {
+            trail.Clear();
+            trail.time = UnityEngine.Random.Range(0.05f, 0.15f);
+        }
+
         gameObject.SetActive(true);
         _onRemovedCallback = _onRemoved;
     }

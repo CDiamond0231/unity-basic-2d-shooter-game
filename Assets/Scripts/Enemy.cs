@@ -24,6 +24,7 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         [Header("Parameter")]
 		[SerializeField] private float m_rotationSpeed = 200;
+		[SerializeField] private AudioClip m_deathSFX = null!;
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		//          Non-Inspector Fields
@@ -101,6 +102,7 @@ namespace BasicUnity2DShooter
 				_playerBullet.RemoveObject();
 			}
 
+			AudioHandler.Instance.PlayOneShot(m_deathSFX);
 			gameObject.SetActive(false);
             m_onEnemyDestroyedCallback?.Invoke(true); // true => Killed by player
         }
