@@ -13,6 +13,7 @@ using BasicUnity2DShooter.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,60 +33,63 @@ namespace BasicUnity2DShooter
             SettingUp,
             ShowingWaveInfo,
             PlayingGame,
+            WinState,
+            LoseState,
         }
 
         [System.Serializable]
 		private class EnemySetData
 		{
-			public EnemySpawner SpawnerToKickOff;
+			public EnemySpawner SpawnerToKickOff = null!;
 			public int NumEnemiesForSet = 10;
 			public float TimeOfSetStart = 0.0f;
 			public float SetDuration = 5.0f; // How long till enemies reach end of path.
 		}
 
+        [System.Serializable]
+        private class EnemyWaveData
+        {
+            public int RequiredEnemyKills = 10; // Need x kills to progress to the next stage.
+            public EnemySetData[] EnemySets = System.Array.Empty<EnemySetData>();
+        }
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Statics
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        public static StageLoop Instance { get; private set; }
+        public static StageLoop? Instance { get; private set; }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        [SerializeField] private TitleLoop m_title_loop;
-        [SerializeField] private SceneTransitionEffect m_sceneTransitionEffect;
+        [SerializeField] private TitleLoop m_titleLoopRef = null!;
+        [SerializeField] private SceneTransitionEffect m_sceneTransitionEffect = null!;
+        [SerializeField] private Player m_player = null!;
 
         [Header("Layout")]
-        [SerializeField] private Transform m_stage_transform;
-        [SerializeField] private Text m_stageScoreText;
-        [SerializeField] private Text m_waveInfoText;
+        [SerializeField] private Text m_enemiesRemainingCountText = null!;
+        [SerializeField] private Text m_killsCountText = null!;
+        [SerializeField] private Text m_killsNeededCountText = null!;
+        [SerializeField] private Text m_centerScreenText = null!;
+        [SerializeField] private Text m_centerScreenSubtitleText = null!;
 
-        [Header("Prefab")]
-        [SerializeField] private Player m_prefab_player;
+        [Header("Audio")]
+        [SerializeField] private AudioClip[] m_newWaveAudioSFX = System.Array.Empty<AudioClip>();
+        [SerializeField] private AudioClip[] m_loseAudioSFX = System.Array.Empty<AudioClip>();
+        [SerializeField] private AudioClip m_winAudioSFX = null!;
 
-		[Header("Waves")]
-		[SerializeField] private EnemySetData[] m_wave1EnemySets = System.Array.Empty<EnemySetData>();
-        [SerializeField] private EnemySetData[] m_wave2EnemySets = System.Array.Empty<EnemySetData>();
-        [SerializeField] private EnemySetData[] m_wave3EnemySets = System.Array.Empty<EnemySetData>();
+        [Header("Enemy Waves - Defines Enemy Spawns")]
+        [SerializeField] private EnemyWaveData[] m_enemyWavesData = System.Array.Empty<EnemyWaveData>();
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Non-Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        private int m_game_score = 0;
-		private int m_currentWave = 0;
+		private int m_currentWaveIndex = 0;
+        private int m_numEnemiesRemaining = 0;
+        private int m_numKillsThisWave = 0;
         private int m_numSetsSpawned = 0;
         private int m_numCompletedSets = 0;
 
         private EnumDirectedStateMachine<StageState>? m_localStateMachine = null;
-
-        private EnemySetData[] CurrentWaveEnemySets
-        {
-            get
-            {
-                return  m_currentWave == 0 ? m_wave1EnemySets :
-                        m_currentWave == 1 ? m_wave2EnemySets :
-                                             m_wave3EnemySets;
-            }
-        }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Properties
@@ -124,8 +128,8 @@ namespace BasicUnity2DShooter
                 m_sceneTransitionEffect.ShowRandomTransition(0.5f, _onFadeOutCompleted: () =>
                 {
                     //exit stage
-                    CleanupStage();
-                    m_title_loop.StartTitleLoop();
+                    Instance = null;
+                    m_titleLoopRef.StartTitleLoop();
                 });
             }
         }
@@ -137,9 +141,21 @@ namespace BasicUnity2DShooter
 		{
             Instance = this;
 
-            m_game_score = 0;
-            m_currentWave = -1;
+            m_numKillsThisWave = 0;
+            m_currentWaveIndex = -1;
             CurrentState = StageState.SettingUp;
+        }
+
+        public void AddKill()
+        {
+            ++m_numKillsThisWave;
+            m_killsCountText.text = $"Kills: {m_numKillsThisWave:00}";
+        }
+
+        public void OnEnemyRemoved()
+        {
+            --m_numEnemiesRemaining;
+            m_enemiesRemainingCountText.text = $"Enemies Remaining: {m_numEnemiesRemaining:00}";
         }
 
         private void BuildStateMachine(StageState _initialState)
@@ -149,24 +165,25 @@ namespace BasicUnity2DShooter
             states[StageState.Paused] = new SimpleState(PausedState_OnEnter, PausedState_Update, PausedState_OnExit);
             states[StageState.ShowingWaveInfo] = new SimpleState(ShowingWaveInfoState_OnEnter, ShowingWaveInfoState_Update, ShowingWaveInfoState_OnExit);
             states[StageState.PlayingGame] = new SimpleState(PlayingGameState_OnEnter, PlayingGameState_Update, PlayingGameState_OnExit);
+            states[StageState.WinState] = new SimpleState(WinGameState_OnEnter, WinGameState_Update, WinGameState_OnExit);
+            states[StageState.LoseState] = new SimpleState(LoseState_OnEnter, LoseGameState_Update, LoseGameState_OnExit);
 
             m_localStateMachine = new EnumDirectedStateMachine<StageState>(states);
             m_localStateMachine.ChangeState(_initialState);
         }
 
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          States
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         private void SettingUpState_OnEnter(SimpleStateMachine _stateMachine)
         {
-            RefreshScore();
+            m_enemiesRemainingCountText.text = $"Enemies Remaining: 00";
+            m_killsCountText.text = $"Kills: {m_numKillsThisWave:00}";
+            m_numSetsSpawned = 0;
 
-            //create player
-            {
-                Player player = Instantiate(m_prefab_player, m_stage_transform);
-                if (player)
-                {
-                    player.transform.position = new Vector3(0, -4, 0);
-                    player.StartRunning();
-                }
-            }
+            m_player.transform.position = new Vector3(0, -4, 0);
+            m_player.Initialise();
         }
 
         private void SettingUpState_Update(SimpleStateMachine _stateMachine)
@@ -184,6 +201,16 @@ namespace BasicUnity2DShooter
 
         private void PausedState_OnEnter(SimpleStateMachine _stateMachine)
         {
+            EnemySetData[] waveEnemySets = m_enemyWavesData[m_currentWaveIndex].EnemySets;
+            for (int i = m_numSetsSpawned - 1; i > -1; --i)
+            {
+                waveEnemySets[i].SpawnerToKickOff.StopSpawningEnemies();
+            }
+
+            m_player.Disable();
+
+            m_centerScreenText.text = string.Empty;
+            m_centerScreenSubtitleText.text = string.Empty;
         }
 
         private void PausedState_Update(SimpleStateMachine _stateMachine)
@@ -196,8 +223,17 @@ namespace BasicUnity2DShooter
 
         private void ShowingWaveInfoState_OnEnter(SimpleStateMachine _stateMachine)
         {
-            ++m_currentWave;
-            m_waveInfoText.text = $"Wave {m_currentWave + 1:00}";
+            ++m_currentWaveIndex;
+            m_numKillsThisWave = 0;
+            m_numEnemiesRemaining = m_enemyWavesData[m_currentWaveIndex].EnemySets.Sum(v => v.NumEnemiesForSet);
+
+            m_centerScreenText.text = $"Wave {m_currentWaveIndex + 1:00}";
+            m_killsCountText.text = $"Kills: {m_numKillsThisWave:00}";
+            m_killsNeededCountText.text = $"Required: {m_enemyWavesData[m_currentWaveIndex].RequiredEnemyKills:00}";
+            m_enemiesRemainingCountText.text = $"Enemies Remaining: {m_numEnemiesRemaining:00}";
+
+            int r = UnityEngine.Random.Range(0, m_newWaveAudioSFX.Length);
+            AudioHandler.Instance.PlayOneShot(m_newWaveAudioSFX[r]);
         }
 
         private void ShowingWaveInfoState_Update(SimpleStateMachine _stateMachine)
@@ -210,7 +246,8 @@ namespace BasicUnity2DShooter
 
         private void ShowingWaveInfoState_OnExit(SimpleStateMachine _stateMachine)
         {
-            m_waveInfoText.text = string.Empty;
+            m_centerScreenText.text = string.Empty;
+            m_centerScreenSubtitleText.text = string.Empty;
         }
 
         private void PlayingGameState_OnEnter(SimpleStateMachine _stateMachine)
@@ -221,7 +258,13 @@ namespace BasicUnity2DShooter
 
         private void PlayingGameState_Update(SimpleStateMachine _stateMachine)
         {
-            EnemySetData[] waveEnemySets = CurrentWaveEnemySets;
+            if (m_player.PlayerState == Player.PlayerStates.Dead)
+            {
+                CurrentState = StageState.LoseState;
+                return;
+            }
+
+            EnemySetData[] waveEnemySets = m_enemyWavesData[m_currentWaveIndex].EnemySets;
             if (m_numSetsSpawned >= waveEnemySets.Length)
             {
                 // All Enemies spawned. Just waiting for them to either finish moving or perish
@@ -238,8 +281,24 @@ namespace BasicUnity2DShooter
                         ++m_numCompletedSets;
                         if (m_numCompletedSets >= waveEnemySets.Length)
                         {
-                            // Moves on to the next Wave
-                            CurrentState = StageState.ShowingWaveInfo;
+                            if (m_numKillsThisWave >= m_enemyWavesData[m_currentWaveIndex].RequiredEnemyKills)
+                            {
+                                // Moves on to the next Wave or finish state
+                                if (m_currentWaveIndex + 1 >= m_enemyWavesData.Length)
+                                {
+                                    CurrentState = StageState.WinState;
+                                }
+                                else
+                                {
+                                    CurrentState = StageState.ShowingWaveInfo;
+                                }
+                            }
+                            else
+                            {
+                                int r = UnityEngine.Random.Range(0, m_loseAudioSFX.Length);
+                                AudioHandler.Instance.PlayOneShot(m_loseAudioSFX[r]);
+                                CurrentState = StageState.LoseState;
+                            }
                         }
                     }
                 );
@@ -251,37 +310,53 @@ namespace BasicUnity2DShooter
         private void PlayingGameState_OnExit(SimpleStateMachine _stateMachine)
         {
         }
-			
 
-		void CleanupStage()
-		{
-			//delete all object in Stage
-			{
-				for (var n = 0; n < m_stage_transform.childCount; ++n)
-				{
-					Transform temp = m_stage_transform.GetChild(n);
-					GameObject.Destroy(temp.gameObject);
-				}
-			}
 
-			Instance = null;
-		}
 
-		//------------------------------------------------------------------------------
+        private void WinGameState_OnEnter(SimpleStateMachine _stateMachine)
+        {
+            AudioHandler.Instance.PlayOneShot(m_winAudioSFX);
 
-		public void AddScore(int a_value)
-		{
-			m_game_score += a_value;
-			RefreshScore();
-		}
+            m_centerScreenText.text = $"You Won!";
+            m_centerScreenSubtitleText.text = "Press Esc to exit";
+        }
 
-		void RefreshScore()
-		{
-			if (m_stageScoreText)
-			{
-				m_stageScoreText.text = $"Score {m_game_score:00000}";
-			}
-		}
+        private void WinGameState_Update(SimpleStateMachine _stateMachine)
+        {
+        }
 
+        private void WinGameState_OnExit(SimpleStateMachine _stateMachine)
+        {
+        }
+
+
+
+        private void LoseState_OnEnter(SimpleStateMachine _stateMachine)
+        {
+            EnemySetData[] waveEnemySets = m_enemyWavesData[m_currentWaveIndex].EnemySets;
+            for (int i = m_numSetsSpawned - 1; i > -1; --i)
+            {
+                waveEnemySets[i].SpawnerToKickOff.StopSpawningEnemies();
+            }
+
+            if (m_player.PlayerState == Player.PlayerStates.Dead)
+            {
+                m_centerScreenText.text = $"You Lose. You did not survive the wave.";
+            }
+            else
+            {
+                m_centerScreenText.text = $"You Lose. You only killed {m_numKillsThisWave:00} / {m_enemyWavesData[m_currentWaveIndex].RequiredEnemyKills:00}.";
+            }
+
+            m_centerScreenSubtitleText.text = "Press Esc to exit";
+        }
+
+        private void LoseGameState_Update(SimpleStateMachine _stateMachine)
+        {
+        }
+
+        private void LoseGameState_OnExit(SimpleStateMachine _stateMachine)
+        {
+        }
 	}
 }
