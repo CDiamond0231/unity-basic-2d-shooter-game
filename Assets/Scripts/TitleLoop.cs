@@ -11,6 +11,7 @@
 #nullable enable
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 /// <summary> Title Screen Loop </summary>
@@ -111,6 +112,17 @@ namespace BasicUnity2DShooter
                     // Switching off Title Screen Controller, which then switches off UI via OnDiable
                     this.enabled = false;
                 });
+            }
+
+
+            // Close game when in title screen and pressing Esc
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+#if UNITY_EDITOR
+                EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
             }
         }
 
