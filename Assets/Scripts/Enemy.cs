@@ -23,10 +23,7 @@ namespace BasicUnity2DShooter
         //          Inspector Fields
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         [Header("Parameter")]
-		[SerializeField] private float m_move_speed = 5;
 		[SerializeField] private float m_rotation_speed = 200;
-		[SerializeField] private float m_life_time = 5;
-		[SerializeField] private int m_score = 100;
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		//          Non-Inspector Fields
@@ -54,7 +51,6 @@ namespace BasicUnity2DShooter
 			float t = m_secondsSinceSpawn / m_totalPathTraversalDuration;
 			transform.position = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t);
 			transform.rotation *= Quaternion.AngleAxis(m_rotation_speed * Time.deltaTime, new Vector3(1, 1, 0));
-
 		}
 
 		private void OnCollisionEnter(Collision collision)
@@ -80,18 +76,21 @@ namespace BasicUnity2DShooter
             gameObject.SetActive(true);
         }
 
-        private void OnDestroyedByPlayer(PlayerBullet a_player_bullet)
+        public void DisableEnemy()
+        {
+            gameObject.SetActive(false);
+        }
+
+        private void OnDestroyedByPlayer(PlayerBullet _playerBullet)
 		{
-			//add score
-			if (StageLoop.Instance)
+			if (StageLoop.Instance != null)
 			{
-				StageLoop.Instance.AddScore(m_score);
+				StageLoop.Instance.AddKill();
 			}
 
-			//delete bullet
-			if (a_player_bullet)
+			if (_playerBullet)
 			{
-				a_player_bullet.DeleteObject();
+				_playerBullet.RemoveObject();
 			}
 
 			gameObject.SetActive(false);
