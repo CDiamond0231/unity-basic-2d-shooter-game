@@ -220,7 +220,7 @@ namespace BasicUnity2DShooter
         // --- Paused State - This state means we are leaving the game to return to title screen. So clear the enemies, turn off player, etc.
         private void PausedState_OnEnter(SimpleStateMachine _stateMachine)
         {
-            if (m_currentWaveIndex < m_enemyWavesData.Length)
+            if (m_currentWaveIndex > -1 && m_currentWaveIndex < m_enemyWavesData.Length)
             {
                 EnemySetData[] waveEnemySets = m_enemyWavesData[m_currentWaveIndex].EnemySets;
                 for (int i = m_numSetsSpawned - 1; i > -1; --i)

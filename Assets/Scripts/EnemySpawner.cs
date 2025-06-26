@@ -167,10 +167,10 @@ namespace BasicUnity2DShooter
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         private void ShowingPathState_OnEnter(SimpleStateMachine _stateMachine)
         {
-            m_linePathRenderer.gameObject.SetActive(true);
             m_linePathRenderer.startColor = m_gizmoPathColour;
             m_linePathRenderer.endColor = m_gizmoPathColour / 2;
             m_linePathRenderer.SetPositions(new Vector3[] { this.transform.position, this.transform.position });
+            m_linePathRenderer.gameObject.SetActive(true);
         }
 
         private void ShowingPathState_Update(SimpleStateMachine _stateMachine)
