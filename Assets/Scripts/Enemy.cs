@@ -103,7 +103,9 @@ namespace BasicUnity2DShooter
 			}
 
 			AudioHandler.Instance.PlayOneShot(m_deathSFX);
-			gameObject.SetActive(false);
+			PFXHandler.Instance.PlayEnemyDeathPFX(transform.position);
+
+            gameObject.SetActive(false);
             m_onEnemyDestroyedCallback?.Invoke(true); // true => Killed by player
         }
 	}

@@ -133,6 +133,7 @@ namespace BasicUnity2DShooter
 
                 int r = UnityEngine.Random.Range(0, m_deathSFX.Length);
                 AudioHandler.Instance.PlayOneShot(m_deathSFX[r]);
+                PFXHandler.Instance.PlayPlayerDeathPFX(transform.position);
 
                 Disable();
             }
