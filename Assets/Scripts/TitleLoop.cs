@@ -27,6 +27,7 @@ namespace BasicUnity2DShooter
 
 		[Header("Layout")]
 		[SerializeField] private GameObject m_titleUIHierarchy = null!;
+        [SerializeField] private GameObject m_escapeInstructionText = null!;
 
         [Header("Spanwers")]
         [SerializeField] private EnemySpawner[] m_enemySpawners = System.Array.Empty<EnemySpawner>();
@@ -68,13 +69,23 @@ namespace BasicUnity2DShooter
 
         protected void OnDisable()
         {
-            m_titleUIHierarchy.SetActive(false);
+            if (m_titleUIHierarchy != null)
+            {
+                m_titleUIHierarchy.SetActive(false);
+            }
 
             if (CurrentEnemySpawner != null)
             {
                 CurrentEnemySpawner.StopSpawningEnemies();
                 m_currentSpawnerIndex = -1;
             }
+        }
+
+        protected void Awake()
+        {
+#if !UNITY_EDITOR && UNITY_WEBGL
+            m_escapeInstructionText.SetActive(false);
+#endif
         }
 
         protected void Update()
@@ -114,16 +125,17 @@ namespace BasicUnity2DShooter
                 });
             }
 
-
-            // Close game when in title screen and pressing Esc
+#if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-#if UNITY_EDITOR
                 EditorApplication.isPlaying = false;
-#else
-                Application.Quit();
-#endif
             }
+#elif !UNITY_WEBGL
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Application.Quit();
+            }
+#endif
         }
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

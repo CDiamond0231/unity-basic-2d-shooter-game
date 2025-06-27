@@ -57,6 +57,7 @@ namespace BasicUnity2DShooter
         private int m_numEnemiesToSpawn = 10;
         private float m_timeToTraversePathDuration = 5.0f;
         private int m_numEnemiesFinished = 0;
+        private Material? m_enemyMaterial = null;
         private System.Action? m_whenAllEnemiesStoppedCallback = null;
 
         private readonly List<Enemy> m_ownedEnemyObjects = new List<Enemy>();
@@ -169,6 +170,8 @@ namespace BasicUnity2DShooter
         {
             m_linePathRenderer.startColor = m_gizmoPathColour;
             m_linePathRenderer.endColor = m_gizmoPathColour / 2;
+
+            m_linePathRenderer.positionCount = 2;
             m_linePathRenderer.SetPositions(new Vector3[] { this.transform.position, this.transform.position });
             m_linePathRenderer.gameObject.SetActive(true);
         }
@@ -201,9 +204,6 @@ namespace BasicUnity2DShooter
 
         private void RemovingPathState_OnEnter(SimpleStateMachine _stateMachine)
         {
-            // Reversed now for the fade out effect
-            m_linePathRenderer.startColor = m_gizmoPathColour / 2;
-            m_linePathRenderer.endColor = m_gizmoPathColour;
         }
 
         private void RemovingPathState_Update(SimpleStateMachine _stateMachine)
@@ -212,13 +212,16 @@ namespace BasicUnity2DShooter
             m_drawPathPoints.Clear();
 
             float t = _stateMachine.TimeSpentInCurrentState / 2.0f;
-            m_drawPathPoints.Add(m_movementPoints[^1]);
+            Vector3 nowPoint = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t);
+            m_drawPathPoints.Add(nowPoint);
 
-            for (float step = 1.0f - ProgressPerStep; step >= 0.0f && step >= t; step -= ProgressPerStep)
+            for (float step = t + ProgressPerStep; step < 1.0f; step += ProgressPerStep)
             {
-                Vector3 nowPoint = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, step);
+                nowPoint = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, step);
                 m_drawPathPoints.Add(nowPoint);
             }
+
+            m_drawPathPoints.Add(m_movementPoints[^1]);
 
             m_linePathRenderer.positionCount = m_drawPathPoints.Count;
             m_linePathRenderer.SetPositions(m_drawPathPoints.ToArray());
@@ -233,7 +236,6 @@ namespace BasicUnity2DShooter
             m_linePathRenderer.gameObject.SetActive(false);
         }
 
-
         private void SpawningEnemyState_OnEnter(SimpleStateMachine _stateMachine)
         {
             ++m_numEnemiesSpawned;
@@ -241,10 +243,14 @@ namespace BasicUnity2DShooter
             m_ownedEnemyObjects.Add(spawnedEnemy);
 
             MeshRenderer meshrenderer = spawnedEnemy.GetComponentInChildren<MeshRenderer>();
-            meshrenderer.material = new Material(meshrenderer.material)
+            if (m_enemyMaterial == null)
             {
-                color = m_gizmoPathColour
-            };
+                m_enemyMaterial = new Material(meshrenderer.material)
+                {
+                    color = m_gizmoPathColour
+                };
+            }
+            meshrenderer.material = m_enemyMaterial;
 
             spawnedEnemy.Initialise(m_movementPoints, m_timeToTraversePathDuration, (killedByPlayer) =>
             {

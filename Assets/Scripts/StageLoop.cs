@@ -120,7 +120,10 @@ namespace BasicUnity2DShooter
 
         protected void OnDisable()
         {
-            m_stageUIHierarchy.SetActive(false);
+            if (m_stageUIHierarchy != null)
+            {
+                m_stageUIHierarchy.SetActive(false);
+            }
         }
 
         protected void Update()

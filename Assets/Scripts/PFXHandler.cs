@@ -28,6 +28,10 @@ namespace BasicUnity2DShooter
         [SerializeField] private ParticleSystem m_playerDeathPFX = null!;
         [SerializeField] private ParticleSystem[] m_enemyDeathPFX = System.Array.Empty<ParticleSystem>();
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Non-Inspector Fields
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        private int m_enemyDeathPfxIndex = 0;
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Unity Methods
@@ -50,15 +54,9 @@ namespace BasicUnity2DShooter
         /// <summary> Plays an enemy PFX on demand. </summary>
         public void PlayEnemyDeathPFX(Vector3 _worldPosition)
         {
-            foreach (var pfx in m_enemyDeathPFX)
-            {
-                if (pfx.isEmitting == false)
-                {
-                    pfx.transform.position = _worldPosition;
-                    pfx.Play();
-                    return;
-                }
-            }
+            m_enemyDeathPfxIndex = (m_enemyDeathPfxIndex + 1) % m_enemyDeathPFX.Length;
+            m_enemyDeathPFX[m_enemyDeathPfxIndex].transform.position = _worldPosition;
+            m_enemyDeathPFX[m_enemyDeathPfxIndex].Play();
         }
     }
 }

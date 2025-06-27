@@ -33,8 +33,23 @@ namespace BasicUnity2DShooter
 		private float m_totalPathTraversalDuration = 1.0f;
 		private Vector3[] m_movementPoints = System.Array.Empty<Vector3>();
 
-        System.Action<bool>? m_onEnemyDestroyedCallback = null;
+        private System.Action<bool>? m_onEnemyDestroyedCallback = null;
+		private Rigidbody? m_rigidBody = null;
 
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //          Properties
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        private Rigidbody RigidBody
+		{
+			get
+			{
+				if (m_rigidBody != null)
+					return m_rigidBody;
+
+				m_rigidBody = GetComponent<Rigidbody>();
+				return m_rigidBody;
+			}
+		}
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //          Unity Methods
@@ -46,14 +61,13 @@ namespace BasicUnity2DShooter
 			{
 				gameObject.SetActive(false);
 				m_onEnemyDestroyedCallback?.Invoke(false); // false => Enemy made it to end of path
-				return;
+				m_onEnemyDestroyedCallback = null;
+                return;
 			}
 
 			float t = m_secondsSinceSpawn / m_totalPathTraversalDuration;
-			transform.SetPositionAndRotation(
-				position: BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t),
-                rotation: transform.rotation * Quaternion.AngleAxis(m_rotationSpeed * Time.deltaTime, new Vector3(1, 1, 0))
-			);
+			transform.rotation *= Quaternion.AngleAxis(m_rotationSpeed * Time.deltaTime, new Vector3(1, 1, 0));
+            RigidBody.position = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, t);
         }
 
 		private void OnCollisionEnter(Collision collision)
@@ -77,7 +91,7 @@ namespace BasicUnity2DShooter
 			m_secondsSinceSpawn = 0.0f;
             m_totalPathTraversalDuration = _totalPathTraversalDuration;
 			m_movementPoints = _movementPoints;
-            transform.position = m_movementPoints[0];
+			RigidBody.position = m_movementPoints[0];
 			m_onEnemyDestroyedCallback = _onEnemyDestroyedCallback;
 
             gameObject.SetActive(true);
@@ -86,6 +100,9 @@ namespace BasicUnity2DShooter
 		/// <summary> Turns off the enemy. </summary>
         public void DisableEnemy()
         {
+            // Moes the enemy off the map so they don't respawn in the middle of the screen when selected via the pool again
+            transform.position = Vector3.right * 1000f;
+            RigidBody.position = transform.position;
             gameObject.SetActive(false);
         }
 
@@ -105,8 +122,13 @@ namespace BasicUnity2DShooter
 			AudioHandler.Instance.PlayOneShot(m_deathSFX);
 			PFXHandler.Instance.PlayEnemyDeathPFX(transform.position);
 
+			// Moes the enemy off the map so they don't respawn in the middle of the screen when selected via the pool again
+			transform.position = BezierSpline.GetPointOnInterpolatedBezierSpline(m_movementPoints, 1f);
+            RigidBody.position = transform.position;
+
             gameObject.SetActive(false);
             m_onEnemyDestroyedCallback?.Invoke(true); // true => Killed by player
+            m_onEnemyDestroyedCallback = null;
         }
 	}
 }
